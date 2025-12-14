@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: action_note_api_development
+      POSTGRES_USER: action_note_api_user
+      POSTGRES_PASSWORD: action_note_api_password
+    volumes:
+      - action-note-api-db-data:/var/lib/postgresql/data
+  api:
+    build: .
+    depends_on:
+      - db
+    ports:
+      - "3001:3001"
+    volumes:
+      - .:/action-note-api
+      - action-note-api-bundle-data:/action-note-api/vendor/bundle
+volumes:
+  action-note-api-db-data:
+  action-note-api-bundle-data:
