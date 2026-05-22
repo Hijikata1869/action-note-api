@@ -83,4 +83,16 @@ RSpec.describe "Api::V1::Users", type: :request do
               end
     end
   end
+
+  describe "PATCH /api/v1/users/:id" do
+    context "正常系" do
+      it "nicknameが更新されること" do
+        user = create(:user)
+        new_params = { user: { nickname: "新しいニックネーム" } }
+        patch "/api/v1/users/#{user.id}", params: new_params
+        expect(response).to have_http_status(200)
+        expect(user.reload.nickname).to eq("新しいニックネーム")
+      end
+    end
+  end
 end
