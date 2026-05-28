@@ -133,5 +133,20 @@ RSpec.describe "Api::V1::Users", type: :request do
         expect(response).to have_http_status(404)
       end
     end
+
+    context "境界値" do
+      let(:user) { create(:user) }
+      it "nicknameが30文字の場合200が返ること" do
+        new_params = { user: { nickname: "a" * 30 } }
+        patch "/api/v1/users/#{user.id}", params: new_params
+        expect(response).to have_http_status(200)
+      end
+
+      it "nicknameが31文字の場合422が返ること" do
+        new_params = { user: { nickname: "a" * 31 } }
+        patch "/api/v1/users/#{user.id}", params: new_params
+        expect(response).to have_http_status(422)
+      end
+    end
   end
 end
