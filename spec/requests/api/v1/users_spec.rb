@@ -83,4 +83,70 @@ RSpec.describe "Api::V1::Users", type: :request do
               end
     end
   end
+
+  describe "PATCH /api/v1/users/:id" do
+    context "正常系" do
+      it "nicknameが更新されること" do
+        user = create(:user)
+        new_params = { user: { nickname: "新しいニックネーム" } }
+        patch "/api/v1/users/#{user.id}", params: new_params
+        expect(response).to have_http_status(200)
+        expect(user.reload.nickname).to eq("新しいニックネーム")
+      end
+    end
+
+    context "異常系" do
+      let (:user) { create(:user) }
+      it "空文字でnicknameにPATCHリクエストを送ると422が返ること" do
+        new_params = { user: { nickname: "" } }
+        patch "/api/v1/users/#{user.id}", params: new_params
+        expect(response).to have_http_status(422)
+      end
+
+      it "空文字でemailにPATCHリクエストを送ると422が返ること" do
+        new_params = { user: { email: "" } }
+        patch "/api/v1/users/#{user.id}", params: new_params
+        expect(response).to have_http_status(422)
+      end
+
+      it "nullでnicknameにPATCHリクエストを送ると422が返ること" do
+        new_params = { user: { nickname: nil } }
+        patch "/api/v1/users/#{user.id}", params: new_params
+        expect(response).to have_http_status(422)
+      end
+
+      it "nullでemailにPATCHリクエストを送ると422が返ること" do
+        new_params = { user: { email: nil } }
+        patch "/api/v1/users/#{user.id}", params: new_params
+        expect(response).to have_http_status(422)
+      end
+
+      it "Eメールの形式に則っていないパラメータではEメールが更新できず422が返ること" do
+        new_params = { user: { email: "invalid-email" } }
+        patch "/api/v1/users/#{user.id}", params: new_params
+        expect(response).to have_http_status(422)
+      end
+
+      it "存在しないユーザーIDにPATCHリクエストを送ると404が返ること" do
+        new_params = { user: { nickname: "新しいニックネーム" } }
+        patch "/api/v1/users/999", params: new_params
+        expect(response).to have_http_status(404)
+      end
+    end
+
+    context "境界値" do
+      let(:user) { create(:user) }
+      it "nicknameが30文字の場合200が返ること" do
+        new_params = { user: { nickname: "a" * 30 } }
+        patch "/api/v1/users/#{user.id}", params: new_params
+        expect(response).to have_http_status(200)
+      end
+
+      it "nicknameが31文字の場合422が返ること" do
+        new_params = { user: { nickname: "a" * 31 } }
+        patch "/api/v1/users/#{user.id}", params: new_params
+        expect(response).to have_http_status(422)
+      end
+    end
+  end
 end
