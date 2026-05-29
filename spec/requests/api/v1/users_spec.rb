@@ -149,4 +149,21 @@ RSpec.describe "Api::V1::Users", type: :request do
       end
     end
   end
+
+  describe "DELETE /api/v1/users/:id" do
+    context "正常系" do
+      it "ユーザーが削除されること" do
+        user = create(:user)
+        delete "/api/v1/users/#{user.id}"
+        expect(response).to have_http_status(200)
+      end
+    end
+
+    context "異常系" do
+      it "存在しないユーザーIDにDELETEリクエストを送ると404が返ること" do
+        delete "/api/v1/users/999"
+        expect(response).to have_http_status(404)
+      end
+    end
+  end
 end
