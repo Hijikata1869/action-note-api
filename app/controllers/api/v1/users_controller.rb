@@ -18,6 +18,12 @@ class Api::V1::UsersController < ApplicationController
     end
   end
 
+  def destroy
+    user = User.find(params[:id])
+    user.destroy
+    render json: { message: "ユーザーを削除しました" }, status: :ok
+  end
+
   private
   def user_params
     params.require(:user).permit(:nickname, :email, :password, :password_confirmation)
