@@ -30,8 +30,5 @@ module ActionNoteApi
     config.api_only = true
 
      config.middleware.use ActionDispatch::Cookies
-     config.middleware.use ActionDispatch::Session::CacheStore,
-        key: "_action_note_api_session",
-        expire_after: 1.month
   end
 end
