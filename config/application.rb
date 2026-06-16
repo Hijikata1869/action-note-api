@@ -30,5 +30,9 @@ module ActionNoteApi
     config.api_only = true
 
      config.middleware.use ActionDispatch::Cookies
+     config.middleware.use ActionDispatch::Session::CacheStore
+     config.cache_store = :redis_cache_store, {
+      url: ENV.fetch("REDIS_URL", "redis://redis:6379/0")
+     }
   end
 end
