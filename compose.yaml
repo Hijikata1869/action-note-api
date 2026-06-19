@@ -21,7 +21,7 @@ services:
       - db
       - redis
     ports:
-      - "3000:3000"
+      - "3001:3001"
     volumes:
       - .:/action-note-api
       - bundle_data:/usr/local/bundle
