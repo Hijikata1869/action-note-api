@@ -29,10 +29,9 @@ module ActionNoteApi
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
 
-     config.middleware.use ActionDispatch::Cookies
-     config.middleware.use ActionDispatch::Session::CacheStore
-     config.cache_store = :redis_cache_store, {
-      url: ENV.fetch("REDIS_URL", "redis://redis:6379/0")
-     }
+    config.session_store :cache_store, key: "_action_note_api_session", expire_after: 1.month
+
+    config.middleware.use ActionDispatch::Cookies
+    config.middleware.use config.session_store, config.session_options
   end
 end
