@@ -7,4 +7,9 @@ class Api::V1::SessionsController < ApplicationController
       render json: { message: "ログインできませんでした" }, status: :unauthorized
     end
   end
+
+  def destroy
+    reset_session
+    render json: { message: "ログアウトしました" }, status: :ok
+  end
 end
