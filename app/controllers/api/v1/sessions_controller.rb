@@ -1,6 +1,7 @@
 class Api::V1::SessionsController < ApplicationController
   def create
     if user = User.authenticate_by(email: params[:email], password: params[:password])
+      reset_session
       session[:user_id] = user.id
       render json: { message: "ログインしました" }, status: :ok
     else
