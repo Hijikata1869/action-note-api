@@ -16,7 +16,7 @@ class Api::V1::SessionsController < ApplicationController
 
   def show
     if current_user
-      render json: { current_user: current_user }, status: :ok
+      render json: { current_user: current_user.safe_attributes }, status: :ok
     else
       render json: { message: "ログインしていません" }, status: :unauthorized
     end
