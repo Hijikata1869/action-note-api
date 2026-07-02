@@ -3,6 +3,7 @@ class Api::V1::UsersController < ApplicationController
     user = User.new(user_params)
 
     if user.save
+      login(user)
       render json: { message: "ユーザーを作成しました" }, status: :created
     else
       render json: { errors: user.errors.full_messages }, status: :unprocessable_entity

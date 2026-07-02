@@ -9,4 +9,9 @@ class ApplicationController < ActionController::API
         render json: { message: "ログインしていません" }, status: :unauthorized
       end
     end
+
+    def login(user)
+      reset_session
+      session[:user_id] = user.id
+    end
 end
