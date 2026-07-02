@@ -1,4 +1,5 @@
 class Api::V1::UsersController < ApplicationController
+  before_action :authenticate_user!, only: [ :update, :destroy ]
   def create
     user = User.new(user_params)
 
@@ -11,17 +12,16 @@ class Api::V1::UsersController < ApplicationController
   end
 
   def update
-    user = User.find(params[:id])
-    if user.update(user_params)
+    if current_user.update(user_params)
       render json: { message: "ユーザー情報を更新しました" }, status: :ok
     else
-      render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
+      render json: { errors: current_user.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
   def destroy
-    user = User.find(params[:id])
-    user.destroy
+    current_user.destroy
+    reset_session
     render json: { message: "ユーザーを削除しました" }, status: :ok
   end
 
