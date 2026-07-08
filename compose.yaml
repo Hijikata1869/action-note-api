@@ -9,13 +9,21 @@ services:
       - "5432:5432"
     volumes:
     - db_data:/var/lib/postgresql/data
+  
+  redis:
+    image: redis:7.4
+    ports:
+      - "6379:6379"
 
   api:
     build: .
     depends_on:
       - db
+      - redis
+    environment:
+      PORT: "3001"
     ports:
-      - "3000:3000"
+      - "3001:3001"
     volumes:
       - .:/action-note-api
       - bundle_data:/usr/local/bundle

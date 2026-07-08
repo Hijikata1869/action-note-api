@@ -28,5 +28,10 @@ module ActionNoteApi
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
+
+    config.session_store :cache_store, key: "_action_note_api_session", expire_after: 1.week, same_site: :lax, secure: Rails.env.production?
+
+    config.middleware.use ActionDispatch::Cookies
+    config.middleware.use config.session_store, config.session_options
   end
 end
