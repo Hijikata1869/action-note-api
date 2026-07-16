@@ -1,6 +1,6 @@
 class Api::V1::BooksController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_book, only: [ :update, :destroy ]
+  before_action :set_book, only: [ :show, :update, :destroy ]
 
   def create
     book = current_user.books.build(book_params)
@@ -9,6 +9,10 @@ class Api::V1::BooksController < ApplicationController
     else
       render json: { errors: book.errors.full_messages }, status: :unprocessable_entity
     end
+  end
+
+  def show
+    render json: @book, status: :ok
   end
 
   def update
