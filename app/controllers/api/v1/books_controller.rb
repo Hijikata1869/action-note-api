@@ -10,6 +10,12 @@ class Api::V1::BooksController < ApplicationController
     end
   end
 
+  def destroy
+    book = current_user.books.find(params[:id])
+    book.destroy!
+    render json: { message: "書籍を削除しました" }, status: :ok
+  end
+
   private
   def book_params
     params.require(:book).permit(:title, :author, :status)
