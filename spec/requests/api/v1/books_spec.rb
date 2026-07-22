@@ -237,4 +237,38 @@ RSpec.describe "Api::V1::Books", type: :request do
       end
     end
   end
+
+  describe "GET /api/v1/books" do
+    let(:user) { create(:user) }
+    let(:other_user) { create(:user) }
+    let!(:other_book) { create(:book, user: other_user) }
+
+    context "ログイン時" do
+      before do
+        login_as(user)
+      end
+
+      it "自分の書籍一覧を取得できること" do
+        create_list(:book, 2, user: user)
+        get "/api/v1/books"
+        result = JSON.parse(response.body)
+        expect(result.length).to eq(2)
+        expect(result.map { |b| b["id"] }).to_not include(other_book.id)
+      end
+
+      it "自分の書籍が存在しない場合空配列が返ること" do
+        get "/api/v1/books"
+        result = JSON.parse(response.body)
+        expect(result).to eq([])
+      end
+    end
+
+    context "非ログイン時" do
+      it "書籍一覧を取得しようとすると401が返ること" do
+        create_list(:book, 2, user: user)
+        get "/api/v1/books"
+        expect(response).to have_http_status(401)
+      end
+    end
+  end
 end
