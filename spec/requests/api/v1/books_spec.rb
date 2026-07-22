@@ -201,4 +201,40 @@ RSpec.describe "Api::V1::Books", type: :request do
       end
     end
   end
+
+  describe "GET /api/v1/books/:id" do
+    let(:user) { create(:user) }
+    let(:book) { create(:book, user: user) }
+    let(:other_user) { create(:user) }
+    let(:other_book) { create(:book, user: other_user) }
+
+    context "ログイン時" do
+      before do
+        login_as(user)
+      end
+      it "書籍詳細情報が取得できること" do
+        get "/api/v1/books/#{book.id}"
+        result = JSON.parse(response.body)
+        expect(response).to have_http_status(200)
+        expect(result["title"]).to eq(book.title)
+      end
+
+      it "存在しないidを指定すると404が返ること" do
+        get "/api/v1/books/99999"
+        expect(response).to have_http_status(404)
+      end
+
+      it "他人の書籍情報を取得しようとすると404が返ること" do
+        get "/api/v1/books/#{other_book.id}"
+        expect(response).to have_http_status(404)
+      end
+    end
+
+    context "非ログイン時" do
+      it "書籍情報を取得しようとすると401が返ること" do
+        get "/api/v1/books/#{book.id}"
+        expect(response).to have_http_status(401)
+      end
+    end
+  end
 end
