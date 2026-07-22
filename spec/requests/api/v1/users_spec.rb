@@ -91,11 +91,11 @@ RSpec.describe "Api::V1::Users", type: :request do
   end
 
   describe "PATCH /api/v1/users/:id" do
-    let(:user) { create(:user, password: "password123") }
+    let(:user) { create(:user) }
 
     context "ログイン中の本人が更新する場合" do
       before do
-        post "/api/v1/session", params: { email: user.email, password: "password123" }
+        login_as(user)
       end
 
       it "nicknameが更新されること" do
@@ -157,10 +157,10 @@ RSpec.describe "Api::V1::Users", type: :request do
     end
 
     context "他人としてログイン中の場合" do
-      let(:other_user) { create(:user, password: "password123") }
+      let(:other_user) { create(:user) }
 
       before do
-        post "/api/v1/session", params: { email: other_user.email, password: "password123" }
+        login_as(other_user)
       end
 
       it "指定したユーザー(user)は更新されず、ログイン中の本人が更新されること" do
@@ -173,11 +173,11 @@ RSpec.describe "Api::V1::Users", type: :request do
   end
 
   describe "DELETE /api/v1/users/:id" do
-    let(:user) { create(:user, password: "password123") }
+    let(:user) { create(:user) }
 
     context "ログイン中の本人が削除する場合" do
       before do
-        post "/api/v1/session", params: { email: user.email, password: "password123" }
+        login_as(user)
       end
 
       it "ログイン中の本人が削除されること" do
@@ -200,10 +200,10 @@ RSpec.describe "Api::V1::Users", type: :request do
     end
 
     context "他人としてログイン中の場合" do
-      let(:other_user) { create(:user, password: "password123") }
+      let(:other_user) { create(:user) }
 
       before do
-        post "/api/v1/session", params: { email: other_user.email, password: "password123" }
+        login_as(other_user)
       end
 
       it "指定したユーザー(user)は削除されず、ログイン中の本人(other_user)が削除されること" do
