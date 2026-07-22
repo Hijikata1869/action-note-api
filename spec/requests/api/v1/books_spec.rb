@@ -123,4 +123,82 @@ RSpec.describe "Api::V1::Books", type: :request do
       end
     end
   end
+
+  describe "PATCH /api/v1/books/:id" do
+    let(:user) { create(:user) }
+    let(:book) { create(:book, user: user) }
+    let(:other_user) { create(:user) }
+    let(:other_book) { create(:book, user: other_user) }
+
+    context "ログイン時" do
+      before do
+        login_as(user)
+      end
+
+      it "titleが更新されること" do
+        new_params = { book: { title: "新しいタイトル" } }
+        patch "/api/v1/books/#{book.id}", params: new_params
+        expect(response).to have_http_status(200)
+        expect(book.reload.title).to eq("新しいタイトル")
+      end
+
+      it "authorが更新されること" do
+        new_params = { book: { author: "新しい著者" } }
+        patch "/api/v1/books/#{book.id}", params: new_params
+        expect(book.reload.author).to eq("新しい著者")
+      end
+
+      it "statusが更新されること" do
+        new_params = { book: { status: "tsundoku" } }
+        patch "/api/v1/books/#{book.id}", params: new_params
+        expect(book.reload.status).to eq("tsundoku")
+      end
+
+      it "空文字でtitleにPATCHリクエストを送ると422が返ること" do
+        new_params = { book: { title: "" } }
+        patch "/api/v1/books/#{book.id}", params: new_params
+        expect(response).to have_http_status(422)
+      end
+
+      it "enumに存在しないstatusを指定すると422が返ること" do
+        new_params = { book: { status: "unread" } }
+        patch "/api/v1/books/#{book.id}", params: new_params
+        expect(response).to have_http_status(422)
+      end
+
+      it "空文字でauthorにPATCHリクエストを送ると422が返ること" do
+        new_params = { book: { author: "" } }
+        patch "/api/v1/books/#{book.id}", params: new_params
+        expect(response).to have_http_status(422)
+      end
+
+      it "他人の書籍の情報を更新しようとすると404が返ること" do
+        new_params = { book: { title: "新しいタイトル" } }
+        patch "/api/v1/books/#{other_book.id}", params: new_params
+        expect(response).to have_http_status(404)
+      end
+
+      it "他人の書籍情報は更新されていないこと" do
+        original_title = other_book.title
+        new_params = { book: { title: "新しいタイトル" } }
+        patch "/api/v1/books/#{other_book.id}", params: new_params
+        expect(other_book.reload.title).to eq(original_title)
+      end
+    end
+
+    context "未ログイン時" do
+      it "PATCHリクエストを送ると401が返ること" do
+        new_params = { book: { title: "新しいタイトル" } }
+        patch "/api/v1/books/#{book.id}", params: new_params
+        expect(response).to have_http_status(401)
+      end
+
+      it "書籍の情報が更新されていないこと" do
+        original_title = book.title
+        new_params = { book: { title: "新しいタイトル" } }
+        patch "/api/v1/books/#{book.id}", params: new_params
+        expect(book.reload.title).to eq(original_title)
+      end
+    end
+  end
 end
