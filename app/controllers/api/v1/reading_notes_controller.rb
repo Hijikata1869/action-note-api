@@ -11,6 +11,11 @@ class Api::V1::ReadingNotesController < ApplicationController
     end
   end
 
+  def show
+    reading_note = current_user.reading_notes.find(params[:id])
+    render json: reading_note, status: :ok
+  end
+
   private
   def reading_note_params
     params.require(:reading_note).permit(:content)
