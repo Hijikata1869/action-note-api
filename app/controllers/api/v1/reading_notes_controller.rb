@@ -1,6 +1,6 @@
 class Api::V1::ReadingNotesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_reading_note, only: %i[show update]
+  before_action :set_reading_note, only: %i[show update destroy]
 
   def create
     book = current_user.books.find(params[:book_id])
@@ -22,6 +22,11 @@ class Api::V1::ReadingNotesController < ApplicationController
     else
       render json: { errors: @reading_note.errors.full_messages }, status: :unprocessable_content
     end
+  end
+
+  def destroy
+    @reading_note.destroy!
+    render json: { message: "読書メモを削除しました" }, status: :ok
   end
 
   private
