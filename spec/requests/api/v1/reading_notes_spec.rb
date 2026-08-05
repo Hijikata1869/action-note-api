@@ -116,4 +116,64 @@ RSpec.describe "Api::V1::ReadingNotes", type: :request do
       end
     end
   end
+
+  describe "PATCH /api/v1/reading_notes/:id" do
+    context "ログイン時" do
+      before do
+        login_as(user)
+      end
+
+      it "読書メモの内容が更新されること" do
+        new_params = { reading_note: { content: "新しいコンテンツ" } }
+        patch "/api/v1/reading_notes/#{reading_note.id}", params: new_params
+        expect(response).to have_http_status(200)
+        result = JSON.parse(response.body)
+        expect(reading_note.book_id).to eq(result["book_id"])
+        expect(reading_note.reload.content).to eq(result["content"])
+      end
+
+      it "contentが空だと422が返ること" do
+        original_content = reading_note.content
+        new_params = { reading_note: { content: "" } }
+        patch "/api/v1/reading_notes/#{reading_note.id}", params: new_params
+        expect(response).to have_http_status(422)
+        expect(reading_note.reload.content).to eq(original_content)
+      end
+
+      it "contentが10000文字だと200が返ること" do
+        new_params = { reading_note: { content: "a" * 10_000 } }
+        patch "/api/v1/reading_notes/#{reading_note.id}", params: new_params
+        expect(response).to have_http_status(200)
+        result = JSON.parse(response.body)
+        expect(reading_note.book_id).to eq(result["book_id"])
+        expect(reading_note.reload.content).to eq(result["content"])
+      end
+
+      it "contentが10001文字だと422が返ること" do
+        original_content = reading_note.content
+        new_params = { reading_note: { content: "a" * 10_001 } }
+        patch "/api/v1/reading_notes/#{reading_note.id}", params: new_params
+        expect(response).to have_http_status(422)
+        expect(reading_note.reload.content).to eq(original_content)
+      end
+
+      it "他人のメモを更新しようとすると404が返ること" do
+        original_content = other_user_reading_note.content
+        new_params = { reading_note: { content: "乗っ取り試行" } }
+        patch "/api/v1/reading_notes/#{other_user_reading_note.id}", params: new_params
+        expect(response).to have_http_status(404)
+        expect(other_user_reading_note.reload.content).to eq(original_content)
+      end
+    end
+
+    context "未ログイン時" do
+      it "読書メモを更新しようとすると401が返ること" do
+        original_content = reading_note.content
+        new_params = { reading_note: { content: "新しいコンテンツ" } }
+        patch "/api/v1/reading_notes/#{reading_note.id}", params: new_params
+        expect(response).to have_http_status(401)
+        expect(reading_note.reload.content).to eq(original_content)
+      end
+    end
+  end
 end
