@@ -104,7 +104,7 @@ RSpec.describe "Api::V1::ReadingNotes", type: :request do
       end
 
       it "存在しない読書メモidを取得しようとすると404が返ること" do
-        get "/api/v1/reading_notes/999999"
+        get "/api/v1/reading_notes/#{ReadingNote.maximum(:id).to_i + 1}"
         expect(response).to have_http_status(404)
       end
     end
@@ -129,7 +129,7 @@ RSpec.describe "Api::V1::ReadingNotes", type: :request do
         expect(response).to have_http_status(200)
         result = JSON.parse(response.body)
         expect(reading_note.book_id).to eq(result["book_id"])
-        expect(reading_note.reload.content).to eq(result["content"])
+        expect(reading_note.reload.content).to eq("新しいコンテンツ")
       end
 
       it "contentが空だと422が返ること" do
@@ -146,7 +146,7 @@ RSpec.describe "Api::V1::ReadingNotes", type: :request do
         expect(response).to have_http_status(200)
         result = JSON.parse(response.body)
         expect(reading_note.book_id).to eq(result["book_id"])
-        expect(reading_note.reload.content).to eq(result["content"])
+        expect(reading_note.reload.content).to eq("a" * 10_000)
       end
 
       it "contentが10001文字だと422が返ること" do
@@ -173,6 +173,46 @@ RSpec.describe "Api::V1::ReadingNotes", type: :request do
         patch "/api/v1/reading_notes/#{reading_note.id}", params: new_params
         expect(response).to have_http_status(401)
         expect(reading_note.reload.content).to eq(original_content)
+      end
+    end
+  end
+
+  describe "DELETE /api/v1/reading_notes/:id" do
+    context "ログイン時" do
+      before do
+        login_as(user)
+      end
+
+      it "読書メモが削除されること" do
+        delete "/api/v1/reading_notes/#{reading_note.id}"
+        expect(response).to have_http_status(200)
+        expect(ReadingNote.exists?(reading_note.id)).to be false
+      end
+
+      it "ReadingNote.countが1減ること" do
+        reading_note_id = reading_note.id
+        expect {
+          delete "/api/v1/reading_notes/#{reading_note_id}"
+        }.to change(ReadingNote, :count).by(-1)
+      end
+
+      it "存在しないIDを指定すると404が返ること" do
+        delete "/api/v1/reading_notes/#{ReadingNote.maximum(:id).to_i + 1}"
+        expect(response).to have_http_status(404)
+      end
+
+      it "他人の読書メモを削除しようとすると404が返ること" do
+        delete "/api/v1/reading_notes/#{other_user_reading_note.id}"
+        expect(response).to have_http_status(404)
+        expect(ReadingNote.exists?(other_user_reading_note.id)).to be true
+      end
+    end
+
+    context "未ログイン時" do
+      it "読書メモを削除しようとすると401が返ること" do
+        delete "/api/v1/reading_notes/#{reading_note.id}"
+        expect(response).to have_http_status(401)
+        expect(ReadingNote.exists?(reading_note.id)).to be true
       end
     end
   end
