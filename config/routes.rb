@@ -3,7 +3,7 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      resources :users
+      resource :user, only: %i[create update destroy]
       resource :session, only: %i[create destroy show]
       resources :books, shallow: true do
         resources :reading_notes, only: %i[create show update destroy]
